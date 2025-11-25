@@ -1,0 +1,350 @@
+.hidden { display: none; }
+.loading-spinner {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+.spinner {
+    width: 4rem;
+    height: 4rem;
+    border: 4px solid #10b981;
+    border-top: 4px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+}
+
+/*All ui here*/
+.gradient-bg {
+    background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+}
+.card-hover {
+    transition: all 0.3s ease;
+}
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Dropdown here*/
+.dropdown-menu {
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Range slider here */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 5px;
+    background-image: linear-gradient(#10b981, #10b981);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #10b981;
+    cursor: pointer;
+    box-shadow: 0 0 2px 0 #555;
+}
+
+input[type="range"]::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #10b981;
+    cursor: pointer;
+    box-shadow: 0 0 2px 0 #555;
+    border: none;
+}
+
+/* Close dropdowns when clicking outside */
+.click-outside-close {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+}
+
+/* Password toggle styles */
+.password-toggle {
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: #10b981;
+}
+
+/* Image preview in user page */
+.image-preview-container {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.image-preview-container:hover {
+    transform: scale(1.02);
+}
+
+/* Coupon verification styles */
+.coupon-valid {
+    background: #d1fae5;
+    border: 1px solid #10b981;
+    color: #065f46;
+}
+
+.coupon-invalid {
+    background: #fee2e2;
+    border: 1px solid #ef4444;
+    color: #7f1d1d;
+}
+
+.coupon-info {
+    background: #dbeafe;
+    border: 1px solid #3b82f6;
+    color: #1e40af;
+}
+
+/*loading animation */
+.skeleton-loader {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.pulse-soft {
+    animation: pulseSoft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseSoft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+/* Notification styles */
+.notification {
+    animation: slideInRight 0.3s ease-out;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification.success {
+    background: #10b981;
+    color: white;
+    border-left: 4px solid #059669;
+}
+
+.notification.error {
+    background: #ef4444;
+    color: white;
+    border-left: 4px solid #dc2626;
+}
+
+.notification.info {
+    background: #3b82f6;
+    color: white;
+    border-left: 4px solid #2563eb;
+}
+
+.notification.warning {
+    background: #f59e0b;
+    color: white;
+    border-left: 4px solid #d97706;
+}
+
+/*card animations */
+.card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Loading states for buttons */
+.button-loading {
+    position: relative;
+    color: transparent;
+}
+
+.button-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-right-color: transparent;
+    animation: button-spinner 0.75s linear infinite;
+}
+
+@keyframes button-spinner {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* verification styles in ro page*/
+.input-error {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2;
+}
+
+.input-success {
+    border-color: #10b981 !important;
+    background-color: #f0fdf4;
+}
+
+.validation-message {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.validation-message.error {
+    color: #ef4444;
+}
+
+.validation-message.success {
+    color: #10b981;
+}
+
+/* page responsiveness */
+@media (max-width: 768px) {
+    .modal-overlay > div {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+    }
+    
+    .grid-cols-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Print styles for coupons */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .coupon-print {
+        border: 2px dashed #000;
+        padding: 20px;
+        margin: 10px 0;
+    }
+}
+
+/* for better looks */
+.focus\:ring-2:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+}
+
+/* for better looks */
+@media (prefers-contrast: high) {
+    .bg-gray-50 {
+        background-color: #ffffff;
+    }
+    
+    .border-gray-300 {
+        border-color: #000000;
+    }
+}
+
+/* Reduced motion*/
+@media (prefers-reduced-motion: reduce) {
+    .card-hover {
+        transition: none;
+    }
+    
+    .notification {
+        animation: none;
+    }
+    
+    .spinner {
+        animation-duration: 2s;
+    }
+}

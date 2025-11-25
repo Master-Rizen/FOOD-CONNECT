@@ -1,0 +1,166 @@
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Create user_profiles table
+CREATE TABLE user_profiles (
+    id UUID REFERENCES auth.users(id) PRIMARY KEY,
+    user_type TEXT NOT NULL CHECK (user_type IN ('user', 'owner')),
+    full_name TEXT,
+    phone TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create restaurants table
+CREATE TABLE restaurants (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    owner_id UUID REFERENCES auth.users(id) NOT NULL,
+    name TEXT NOT NULL,
+    address TEXT NOT NULL DEFAULT 'Address to be updated',
+    phone TEXT DEFAULT '',
+    cuisine_type TEXT DEFAULT 'Various',
+    latitude DECIMAL(10,8),
+    longitude DECIMAL(11,8),
+    is_verified BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create food_listings table
+CREATE TABLE food_listings (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    restaurant_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    category TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    pickup_time TEXT NOT NULL,
+    delivery_available BOOLEAN DEFAULT false,
+    pickup_available BOOLEAN DEFAULT true,
+    distance_km DECIMAL(4,2) DEFAULT 1.0,
+    image_url TEXT DEFAULT 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
+    is_available BOOLEAN DEFAULT true,
+    claimed_by UUID REFERENCES auth.users(id),
+    confirmation_code TEXT,
+    created_by UUID REFERENCES auth.users(id) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    
+    CONSTRAINT price_positive CHECK (price > 0),
+    CONSTRAINT quantity_positive CHECK (quantity > 0)
+);
+
+-- Enable Row Level Security
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE restaurants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE food_listings ENABLE ROW LEVEL SECURITY;
+
+-- USER_PROFILES POLICIES (FIXED)
+-- Allow users to insert their own profiles
+CREATE POLICY "Users can insert own profiles" ON user_profiles
+FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Users can view their own profiles
+CREATE POLICY "Users can view own profiles" ON user_profiles
+FOR SELECT USING (auth.uid() = id);
+
+-- Users can update their own profiles
+CREATE POLICY "Users can update own profiles" ON user_profiles
+FOR UPDATE USING (auth.uid() = id);
+
+-- RESTAURANTS POLICIES
+CREATE POLICY "Owners can insert restaurants" ON restaurants
+FOR INSERT WITH CHECK (auth.uid() = owner_id);
+
+CREATE POLICY "Owners can view restaurants" ON restaurants
+FOR SELECT USING (auth.uid() = owner_id);
+
+CREATE POLICY "Owners can update restaurants" ON restaurants
+FOR UPDATE USING (auth.uid() = owner_id);
+
+-- FOOD_LISTINGS POLICIES
+CREATE POLICY "Anyone can view available listings" ON food_listings
+FOR SELECT USING (is_available = true AND deleted_at IS NULL);
+
+CREATE POLICY "Owners can insert listings" ON food_listings
+FOR INSERT WITH CHECK (auth.uid() = created_by);
+
+CREATE POLICY "Owners can update listings" ON food_listings
+FOR UPDATE USING (auth.uid() = created_by);
+
+CREATE POLICY "Users can claim listings" ON food_listings
+FOR UPDATE USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Owners can verify coupons" ON food_listings
+FOR SELECT USING (auth.uid() = created_by OR auth.uid() = claimed_by);
+
+-- Create indexes
+CREATE INDEX idx_food_listings_available ON food_listings(is_available, created_at) WHERE deleted_at IS NULL;
+CREATE INDEX idx_food_listings_claimed ON food_listings(claimed_by, is_available);
+CREATE INDEX idx_restaurants_owner ON restaurants(owner_id);
+CREATE INDEX idx_user_profiles_type ON user_profiles(user_type);
+
+-- Create storage bucket
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('food-images', 'food-images', true);
+
+-- Storage policies
+CREATE POLICY "Public can view food images" ON storage.objects
+FOR SELECT USING (bucket_id = 'food-images');
+
+CREATE POLICY "Users can upload food images" ON storage.objects
+FOR INSERT WITH CHECK (bucket_id = 'food-images' AND auth.role() = 'authenticated');
+
+-- Updated_at triggers
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_user_profiles_updated_at 
+    BEFORE UPDATE ON user_profiles 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_restaurants_updated_at 
+    BEFORE UPDATE ON restaurants 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_food_listings_updated_at 
+    BEFORE UPDATE ON food_listings 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Soft delete function
+CREATE OR REPLACE FUNCTION soft_delete_food_listing()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.deleted_at = NOW();
+    NEW.is_available = false;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER soft_delete_food_listing_trigger
+    BEFORE DELETE ON food_listings
+    FOR EACH ROW
+    EXECUTE FUNCTION soft_delete_food_listing();
+
+
+
+
+
+
+-- Just ensure the confirmation_code column exists
+ALTER TABLE food_listings 
+ADD COLUMN IF NOT EXISTS confirmation_code TEXT;
+
+-- Create an index for better performance
+CREATE INDEX IF NOT EXISTS idx_confirmation_codes 
+ON food_listings(confirmation_code) 
+WHERE confirmation_code IS NOT NULL;
